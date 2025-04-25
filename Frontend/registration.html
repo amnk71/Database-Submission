@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Page encoding and mobile responsiveness -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Page</title>
+
+  <!-- Inline CSS styling for layout and appearance -->
+  <style>
+    /* Page layout and background color */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      background-color: #c0e3d1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container for the registration form */
+    .form-container {
+      background-color: #ffffff;
+      padding: 30px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Form layout */
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Heading style */
+    h2 {
+      text-align: center;
+      color: #e24040;
+      margin-bottom: 15px;
+    }
+
+    /* Form field group */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    /* Label styling */
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    /* Input field styles */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    /* Submit button style */
+    button {
+      background-color: #e24040;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Hover effect for button */
+    button:hover {
+      background-color: #c53838;
+    }
+
+    /* Error or success message style */
+    .message {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* Link to return to homepage */
+    .back-button {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: #e24040;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    .back-button:hover {
+      color: #c53838;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main container for registration form -->
+  <div class="form-container">
+    <form id="registrationForm">
+      <h2>Register</h2>
+
+      <!-- Full Name field -->
+      <div class="form-group">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+
+      <!-- Address field -->
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required />
+      </div>
+
+      <!-- Phone field -->
+      <div class="form-group">
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone" name="phone" required />
+      </div>
+
+      <!-- Email field -->
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+
+      <!-- Password field -->
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+
+      <!-- Confirm password field -->
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required />
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit">Register</button>
+
+      <!-- Area for displaying messages -->
+      <div id="message" class="message"></div>
+    </form>
+
+    <!-- Link back to homepage -->
+    <a href="/index.html" class="back-button">← Back to Home</a>
+  </div>
+
+  <!-- JavaScript for handling form submission -->
+  <script>
+    document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+      e.preventDefault(); // Prevent default form submission
+
+      // Get user input values
+      const name = document.getElementById('name').value;
+      const address = document.getElementById('address').value;
+      const phone = document.getElementById('phone').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const messageElement = document.getElementById('message');
+
+      // Check if passwords match
+      if (password !== confirmPassword) {
+        messageElement.textContent = 'Passwords do not match.';
+        messageElement.style.color = 'red';
+        return;
+      }
+
+      try {
+        // Send registration data to backend
+        const response = await fetch('http://127.0.0.1:5000/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, address, phone, email, password })
+        });
+
+        // Handle backend response
+        const result = await response.json();
+        messageElement.textContent = result.message || result.error;
+        messageElement.style.color = result.error ? 'red' : 'green';
+
+      } catch (error) {
+        // Show error message if fetch fails
+        messageElement.textContent = 'Could not connect to server.';
+        messageElement.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
