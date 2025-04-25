@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    /* General styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    /* Header with logout button */
+    .header {
+      background-color: #e24040;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header span {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .header button {
+      background: white;
+      color: #e24040;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .header button:hover {
+      background: #f2f2f2;
+    }
+
+    /* Main container for admin options */
+    .admin-container {
+      max-width: 800px;
+      margin: 40px auto;
+      text-align: center;
+    }
+
+    .admin-container h2 {
+      color: #e24040;
+      margin-bottom: 30px;
+    }
+
+    .admin-container button {
+      margin: 10px;
+      padding: 12px 20px;
+      background-color: #e24040;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .admin-container button:hover {
+      background-color: #c53838;
+    }
+
+    /* Sidebar for forms */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background-color: white;
+      border-left: 2px solid #e24040;
+      box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .sidebar.open {
+      right: 0;
+    }
+
+    .sidebar h3 {
+      color: #e24040;
+      margin-top: 0;
+    }
+
+    .sidebar label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .sidebar input,
+    .sidebar select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .sidebar button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #e24040;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .sidebar button:hover {
+      background-color: #c53838;
+    }
+
+    .close-btn {
+      margin-top: 10px;
+      background-color: #777 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <span>Welcome, Admin</span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <!-- Admin Options -->
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+    <button onclick="openSidebar('restaurant')">Restaurants</button>
+    <button onclick="openSidebar('deleteUser')">Delete User</button>
+    <button onclick="openSidebar('assignAdmin')">Assign Restaurant Admin</button>
+    <button onclick="openSidebar('deliveryPersonnel')">Delivery Personnel</button>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="adminSidebar">
+    <h3 id="sidebarTitle">Sidebar</h3>
+    <form id="sidebarForm">
+      <div id="formContent"></div>
+      <button type="submit">Submit</button>
+      <button type="button" class="close-btn" onclick="closeSidebar()">Cancel</button>
+    </form>
+  </div>
+
+  <script>
+    // Opens sidebar and shows the appropriate form based on mode
+    function openSidebar(mode) {
+      const title = document.getElementById("sidebarTitle");
+      const content = document.getElementById("formContent");
+      content.innerHTML = "";
+
+      // Manage restaurants
+      if (mode === "restaurant") {
+        title.textContent = "Manage Restaurants";
+        content.innerHTML = `
+          <label>Choose Action:</label>
+          <select id="restaurantAction" onchange="renderRestaurantForm(this.value)">
+            <option value="add">Add Restaurant</option>
+            <option value="delete">Delete Restaurant</option>
+            <option value="update">Update Restaurant</option>
+          </select>
+          <div id="restaurantFormArea" style="margin-top: 15px;"></div>
+        `;
+        renderRestaurantForm("add");
+
+      // Delete user
+      } else if (mode === "deleteUser") {
+        title.textContent = "Delete User";
+        content.innerHTML = `
+          <form id="deleteUserForm">
+            <label>User Email to Delete:</label>
+            <input type="email" name="email" required />
+            <button type="submit">Delete</button>
+          </form>
+        `;
+
+        // Attach form submit handler
+        setTimeout(() => {
+          const form = document.getElementById("deleteUserForm");
+          if (form) {
+            form.addEventListener("submit", async function (e) {
+              e.preventDefault();
+              const data = Object.fromEntries(new FormData(this).entries());
+
+              const res = await fetch("http://127.0.0.1:5000/admin/delete-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(data)
+              });
+
+              const result = await res.json();
+              alert(result.message || result.error);
+              if (res.ok) this.reset();
+            });
+          }
+        }, 0);
+
+      // Assign admin
+      } else if (mode === "assignAdmin") {
+        title.textContent = "Assign Restaurant Admin";
+        content.innerHTML = `
+          <label>User Email:</label>
+          <input type="email" name="email" required />
+          <label>Restaurant ID:</label>
+          <input type="number" name="restaurant_id" required />
+        `;
+
+      // Manage delivery personnel
+      } else if (mode === "deliveryPersonnel") {
+        title.textContent = "Manage Delivery Personnel";
+        content.innerHTML = `
+          <label>Choose Action:</label>
+          <select id="deliveryAction" onchange="renderDeliveryForm(this.value)">
+            <option value="add">Add</option>
+            <option value="delete">Delete</option>
+          </select>
+          <div id="deliveryFormArea" style="margin-top: 15px;"></div>
+        `;
+        renderDeliveryForm("add");
+      }
+
+      document.getElementById("adminSidebar").classList.add("open");
+    }
+
+    // Load form inputs for restaurant management
+    function renderRestaurantForm(action) {
+      const area = document.getElementById("restaurantFormArea");
+      if (action === "add") {
+        area.innerHTML = `
+          <label>Restaurant Name:</label>
+          <input type="text" name="name" required />
+          <label>Cuisine Type:</label>
+          <input type="text" name="cuisine_type" required />
+          <label>Address:</label>
+          <input type="text" name="address" required />
+          <label>Contact Number:</label>
+          <input type="text" name="contact_number" />
+        `;
+      } else if (action === "delete") {
+        area.innerHTML = `
+          <label>Restaurant ID to Delete:</label>
+          <input type="number" name="restaurant_id" required />
+        `;
+      } else if (action === "update") {
+        area.innerHTML = `
+          <label>Restaurant ID to Update:</label>
+          <input type="number" name="restaurant_id" required />
+          <label>New Name (optional):</label>
+          <input type="text" name="name" />
+          <label>New Cuisine Type:</label>
+          <input type="text" name="cuisine_type" />
+          <label>New Address:</label>
+          <input type="text" name="address" />
+          <label>New Contact Number:</label>
+          <input type="text" name="contact_number" />
+        `;
+      }
+    }
+
+    // Load form for delivery personnel management
+    function renderDeliveryForm(action) {
+      const area = document.getElementById("deliveryFormArea");
+      if (action === "add") {
+        area.innerHTML = `
+          <label>Delivery Person Name:</label>
+          <input type="text" name="name" required />
+          <label>Phone Number:</label>
+          <input type="text" name="phone" required />
+        `;
+      } else if (action === "delete") {
+        area.innerHTML = `
+          <label>Phone Number to Delete:</label>
+          <input type="text" name="phone" required />
+        `;
+      }
+    }
+
+    // Close the sidebar
+    function closeSidebar() {
+      document.getElementById("adminSidebar").classList.remove("open");
+    }
+
+    // Handle logout
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await fetch("http://127.0.0.1:5000/logout", {
+        method: "GET",
+        credentials: "include"
+      });
+      window.location.href = "/index.html";
+    });
+
+    // Handle main sidebar form submission
+    document.getElementById("sidebarForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("sidebarTitle").textContent;
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      let endpoint = "";
+
+      // Decide endpoint based on form title
+      if (title.includes("Manage Restaurants")) {
+        const action = document.getElementById("restaurantAction").value;
+        if (action === "add") endpoint = "add-restaurant";
+        else if (action === "delete") endpoint = "delete-restaurant";
+        else if (action === "update") endpoint = "update-restaurant";
+
+      } else if (title.includes("Delete User")) {
+        endpoint = "delete-user";
+
+      } else if (title.includes("Assign Restaurant Admin")) {
+        endpoint = "assign-restaurant-admin";
+
+      } else if (title.includes("Delivery Personnel")) {
+        const action = document.getElementById("deliveryAction").value;
+        endpoint = action === "add" ? "add-delivery-personnel" : "delete-delivery-personnel";
+      }
+
+      // Send request to server
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/admin/${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        alert(result.message || result.error);
+        if (res.ok) closeSidebar();
+      } catch (err) {
+        alert("Operation failed.");
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
