@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Restaurant Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- Styling for the whole page -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    /* Header bar at the top of the dashboard */
+    .header {
+      background-color: #e24040;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header span {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    /* Logout button styling */
+    .header button {
+      background: white;
+      color: #e24040;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .header button:hover {
+      background: #f2f2f2;
+    }
+
+    /* Central container for admin sections */
+    .admin-container {
+      max-width: 700px;
+      margin: 40px auto;
+      text-align: center;
+    }
+
+    .admin-container h2 {
+      color: #e24040;
+      margin-bottom: 30px;
+    }
+
+    /* Form elements styling */
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #e24040;
+      color: white;
+      font-weight: bold;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #c53838;
+    }
+
+    /* Styling for each form section like add/delete */
+    .form-section {
+      margin-bottom: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      color: #e24040;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    /* Display area for all menu items */
+    .menu-list {
+      background: white;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    /* Each individual menu item style */
+    .menu-item {
+      border-bottom: 1px solid #eee;
+      padding: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-item span {
+      font-weight: bold;
+    }
+
+    .menu-item button {
+      background: #999;
+      color: white;
+      padding: 4px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .menu-item button:hover {
+      background: #777;
+    }
+
+    /* Orders section showing customer orders */
+    .order-list {
+      background: white;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    /* Each order box style */
+    .order-box {
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+    }
+
+    .order-box:last-child {
+      border-bottom: none;
+    }
+
+    .order-box strong {
+      color: #e24040;
+    }
+
+    /* Modal background and position */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    /* Modal box content */
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      position: relative;
+    }
+
+    /* Close button inside modal */
+    .close-button {
+      position: absolute;
+      top: 10px; right: 14px;
+      font-size: 22px;
+      color: #999;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header with logout -->
+  <div class="header">
+    <span id="restaurantName">Welcome, Restaurant Admin</span>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Container holding all admin operations -->
+  <div class="admin-container">
+    <h2>Restaurant Menu</h2>
+
+    <!-- Section to add a new menu item -->
+    <div class="form-section">
+      <h3>Add Menu Item</h3>
+      <form id="addMenuForm">
+        <input type="text" name="dish_name" placeholder="Dish Name" required />
+        <input type="text" name="description" placeholder="Description" />
+        <input type="number" step="0.01" name="price" placeholder="Price ($)" required />
+        <select name="availability">
+          <option value="In Stock">In Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <button type="submit">Add Item</button>
+      </form>
+    </div>
+
+    <!-- Section to delete a menu item by its ID -->
+    <div class="form-section">
+      <h3>Delete Menu Item</h3>
+      <form id="deleteMenuForm">
+        <input type="number" name="menu_id" placeholder="Menu ID to Delete" required />
+        <button type="submit">Delete Item</button>
+      </form>
+      <div class="note">* Menu ID must belong to your restaurant</div>
+    </div>
+
+    <!-- Displays the list of current menu items -->
+    <div class="menu-list">
+      <h3>Current Menu</h3>
+      <div id="menuItems">Loading...</div>
+    </div>
+
+    <!-- Displays list of orders for the restaurant -->
+    <div class="order-list">
+      <h3>Customer Orders</h3>
+      <input type="text" id="orderSearchInput" placeholder="Search by customer name, date, or status..."
+        style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;" />
+      <div id="orderList">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Modal popup for editing a menu item -->
+  <div id="editMenuModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeEditMenuModal()">&times;</span>
+      <h3>Edit Menu Item</h3>
+      <form id="editMenuForm">
+        <input type="hidden" id="editMenuId" />
+        <input type="text" id="editDishName" placeholder="Dish Name" required />
+        <input type="text" id="editDescription" placeholder="Description" />
+        <input type="number" step="0.01" id="editPrice" placeholder="Price ($)" required />
+        <select id="editAvailability">
+          <option value="In Stock">In Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    let restaurantId = null; // Holds the restaurant ID of the logged-in admin
+    let allOrders = []; // Stores all orders fetched from the backend
+  
+    // Opens the "Edit Menu" modal with the selected item's details filled in
+    function openEditMenuModal(menuId, dishName, description, price, availability) {
+      document.getElementById('editMenuId').value = menuId;
+      document.getElementById('editDishName').value = dishName;
+      document.getElementById('editDescription').value = description;
+      document.getElementById('editPrice').value = price;
+      document.getElementById('editAvailability').value = availability;
+  
+      document.getElementById('editMenuModal').style.display = 'block';
+    }
+  
+    // Closes the "Edit Menu" modal
+    function closeEditMenuModal() {
+      document.getElementById('editMenuModal').style.display = 'none';
+    }
+  
+    // Submits the edited menu item to the backend
+    document.getElementById('editMenuForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+  
+      const updatedItem = {
+        menu_id: document.getElementById('editMenuId').value,
+        dish_name: document.getElementById('editDishName').value,
+        description: document.getElementById('editDescription').value,
+        price: parseFloat(document.getElementById('editPrice').value).toFixed(2),
+        availability: document.getElementById('editAvailability').value
+      };
+  
+      try {
+        const res = await fetch('http://127.0.0.1:5000/admin/edit-menu-item', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify(updatedItem)
+        });
+  
+        const result = await res.json();
+        if (res.ok) {
+          alert(result.message);
+          closeEditMenuModal(); // Hide modal
+          fetchMenu(); // Refresh menu list
+        } else {
+          alert(result.error || 'Failed to update menu item.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while updating the item.');
+      }
+    });
+  
+    // Fetches all menu items for the admin's restaurant
+    async function fetchMenu() {
+      const res = await fetch(`http://127.0.0.1:5000/menus/${restaurantId}`);
+      const data = await res.json();
+      const menuDiv = document.getElementById("menuItems");
+      menuDiv.innerHTML = "";
+  
+      if (!data.menu || data.menu.length === 0) {
+        menuDiv.innerHTML = "<p>No menu items yet.</p>";
+        return;
+      }
+  
+      // Loop through each item and display with Edit/Delete buttons
+      data.menu.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "menu-item";
+        div.innerHTML = `
+          <div style="flex: 1;">
+            <span>${item.dish_name}</span> - $${item.price} (${item.availability})
+            <div style="font-size: 12px; color: #555;">${item.description || ''}</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button style="background:#4caf50;" onclick="openEditMenuModal(
+              ${item.menu_id}, 
+              '${item.dish_name.replace(/'/g, "\\'")}', 
+              '${(item.description || '').replace(/'/g, "\\'")}', 
+              ${item.price}, 
+              '${item.availability}'
+            )">Edit</button>
+            <button onclick="deleteItem(${item.menu_id})">Delete</button>
+          </div>
+        `;
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+        div.style.alignItems = "center";
+        menuDiv.appendChild(div);
+      });
+    }
+  
+    // Marks an order as ready (sets status to Delivered)
+    async function markAsReady(orderId) {
+      if (!confirm("Mark this order as ready for delivery?")) return;
+  
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/restaurant/mark-ready/${orderId}`, {
+          method: "POST",
+          credentials: "include"
+        });
+        const result = await res.json();
+        if (res.ok) {
+          alert(result.message);
+          fetchOrders(); // Refresh order list
+        } else {
+          alert(result.error || "Failed to update order.");
+        }
+      } catch (err) {
+        console.error("Update error", err);
+        alert("Error updating order.");
+      }
+    }
+  
+    // Loads the dashboard: verifies admin session and fetches menu/orders
+    async function loadDashboard() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/session-user", {
+          credentials: "include"
+        });
+        const user = await res.json();
+  
+        if (!user || user.role !== "restaurant_admin") {
+          window.location.href = "/index.html"; // Redirect if not authorized
+          return;
+        }
+  
+        restaurantId = user.restaurant_id;
+        document.getElementById("restaurantName").textContent = `Welcome, ${user.name}`;
+        fetchMenu();
+        fetchOrders();
+      } catch (err) {
+        alert("Session error. Redirecting...");
+        window.location.href = "/index.html";
+      }
+    }
+  
+    // Fetches all orders placed at this restaurant
+    async function fetchOrders() {
+      const res = await fetch("http://127.0.0.1:5000/restaurant/orders", {
+        credentials: "include"
+      });
+      const data = await res.json();
+      if (!data.orders || data.orders.length === 0) {
+        document.getElementById("orderList").innerHTML = "<p>No orders yet.</p>";
+        return;
+      }
+  
+      allOrders = data.orders;
+      renderOrders(allOrders);
+    }
+  
+    // Displays orders in the UI with details and a "Mark as Ready" button
+    function renderOrders(orders) {
+      const list = document.getElementById("orderList");
+      list.innerHTML = "";
+  
+      orders.forEach(order => {
+        const div = document.createElement("div");
+        div.className = "order-box";
+        div.innerHTML = `
+          <strong>Order #${order.order_id}</strong><br/>
+          Customer: ${order.customer_name}<br/>
+          Total: $${parseFloat(order.total_amount).toFixed(2)}<br/>
+          Status: <span>${order.delivery_status}</span><br/>
+          Delivery: ${order.delivery_person || 'Unassigned'}<br/>
+          Placed: ${new Date(order.order_date).toLocaleString()}
+          ${order.delivery_status === "Pending" ? `
+            <br/>
+            <button style="margin-top:8px; padding:5px 10px; font-size:12px;" onclick="markAsReady(${order.order_id})">
+              Mark as Ready
+            </button>
+          ` : ''}
+        `;
+        list.appendChild(div);
+      });
+    }
+  
+    // Filters orders live based on input (customer name, status, or date)
+    document.getElementById("orderSearchInput").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const filtered = allOrders.filter(order =>
+        order.customer_name.toLowerCase().includes(query) ||
+        order.delivery_status.toLowerCase().includes(query) ||
+        new Date(order.order_date).toLocaleString().toLowerCase().includes(query)
+      );
+      renderOrders(filtered);
+    });
+  
+    // Handles adding a new menu item via the add menu form
+    document.getElementById("addMenuForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+      data.restaurant_id = restaurantId;
+  
+      const res = await fetch("http://127.0.0.1:5000/admin/add-menu-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data)
+      });
+  
+      const result = await res.json();
+      alert(result.message || result.error);
+      if (res.ok) {
+        this.reset(); // Clear form
+        fetchMenu(); // Refresh menu list
+      }
+    });
+  
+    // Sends request to backend to soft delete a menu item
+    async function deleteItem(id) {
+      const res = await fetch("http://127.0.0.1:5000/admin/delete-menu-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ menu_id: id })
+      });
+  
+      const result = await res.json();
+      alert(result.message || result.error);
+      if (res.ok) fetchMenu(); // Refresh on success
+    }
+  
+    // Handles deleting a menu item using the delete form
+    document.getElementById("deleteMenuForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const id = this.menu_id.value;
+      await deleteItem(id);
+      this.reset(); // Clear input
+    });
+  
+    // Logs out the restaurant admin
+    async function logout() {
+      await fetch("http://127.0.0.1:5000/logout", {
+        credentials: "include"
+      });
+      window.location.href = "/index.html"; // Redirect to home
+    }
+  
+    // Run this when the page is fully loaded
+    window.addEventListener("DOMContentLoaded", loadDashboard);
+  </script>
+  
