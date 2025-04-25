@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Sets character encoding and viewport settings for responsive design -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlmelAs - Home</title>
+
+  <!-- External stylesheet link -->
+  <link rel="stylesheet" href="frontend/css/styles.css" />
+
+  <!-- Inline styles for the home page -->
+  <style>
+    /* Style for the whole page */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #c0e3d1;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container for the content block */
+    .form-container {
+      background-color: #ffffff;
+      padding: 30px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Logo image styling */
+    .home-logo {
+      width: 300px;
+      max-width: 90%;
+      margin-bottom: 20px;
+    }
+
+    /* Main heading style */
+    h1 {
+      color: #e24040;
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    /* Description text below the title */
+    p {
+      font-size: 1.1rem;
+      color: #555;
+      text-align: center;
+    }
+
+    /* Container for login/register buttons */
+    .home-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    /* Style for the login/register buttons */
+    .home-buttons a button {
+      font-size: 16px;
+      padding: 12px 24px;
+      background-color: #e24040;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    /* Button hover effect */
+    .home-buttons a button:hover {
+      background-color: #c53838;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Main container for the logo, title, and buttons -->
+  <div class="form-container">
+    <!-- Logo image -->
+    <img src="frontend/assets/images/logo.png" alt="BlmelAs Logo" class="home-logo" />
+
+    <!-- Welcome title -->
+    <h1>Welcome to BlmelAs</h1>
+
+    <!-- Subtitle text -->
+    <p>Your one-stop platform for delicious food, fast delivery, and a great experience!</p>
+
+    <!-- Buttons for login and registration -->
+    <div class="home-buttons">
+      <a href="frontend/pages/login.html"><button>Login</button></a>
+      <a href="frontend/pages/reg.html"><button>Register</button></a>
+    </div>
+  </div>
+</body>
+</html>
